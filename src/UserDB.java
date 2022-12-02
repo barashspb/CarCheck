@@ -65,4 +65,23 @@ public class UserDB {
             return false;
         }
     }
+
+    //редактирование профиля пользователя
+    public boolean EditUser (int userid,
+                             String username,
+                             String telephone,
+                             String password) {
+        try {
+            String query = "UPDATE user SET username = '"+username+"', telephone = '"+telephone+"', " +
+                    "password = '"+password+"' WHERE id = '"+userid+"'";
+            PreparedStatement prSt = dbConnection.prepareStatement(query);
+            boolean res = prSt.execute(query);
+            System.out.println(res);
+            return true;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
