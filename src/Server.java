@@ -1,6 +1,9 @@
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 
 public class Server {
     private HttpServer _server = null;
@@ -23,6 +27,8 @@ public class Server {
                 return 0;
             }
         });
+        _server.createContext("/login", new LoginHandler()); //вход
+        _server.createContext("/reg", new NewUserHandler()); //регистрация
     }
 
     public void start() {
@@ -74,6 +80,106 @@ public class Server {
                 System.out.println(e.getMessage());
             }
             os.close();
+        }
+    }
+
+    //авторизация пользователя
+    public static class LoginHandler extends MyHttpHandler {
+        private UserDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new UserDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("requestID", "0");
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("CheckUserAuth")) {
+                    String login = (String) req.get("login");
+                    String password = (String) req.get("password");
+                    System.out.println("user: " + login + " " + password);
+                    String resultDataBase =_dataBase.CheckUserAuth(login, password);
+                    if ( resultDataBase != ("-1")) {
+                        answer.put("requestID", "1");
+                        answer.put("answer", resultDataBase);
+                        result = answer.toJSONString();
+                    } else {
+                        answer.put("requestID", "0");
+                        answer.put("answer", "error pipez");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    //регистрация пользователя
+    public static class NewUserHandler extends MyHttpHandler {
+        UserDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new UserDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("NewUserReg")) {
+                    String username = (String) req.get("username");
+                    String telephone = (String) req.get("telephone");
+                    String password = (String) req.get("password");
+                    System.out.println("user: " + username + " " + telephone + " " + password);
+
+                    if (_dataBase.NewUser(username, telephone, password)) {
+                        answer.put("answer", "you sign in");
+                        result = answer.toJSONString();
+                    } else {
+                        answer.put("answer", "registration error !!!");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (org.json.simple.parser.ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
         }
     }
 }
