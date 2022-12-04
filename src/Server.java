@@ -29,6 +29,9 @@ public class Server {
         });
         _server.createContext("/login", new LoginHandler()); //вход
         _server.createContext("/reg", new NewUserHandler()); //регистрация
+        _server.createContext("/edit", new EditUserHandler()); //редактирование профиля
+        _server.createContext("/neworder", new NewOrderHandler()); //создание новой заявки
+        _server.createContext("/editorder", new NewOrderHandler()); //редактирование заявки
     }
 
     public void start() {
@@ -123,7 +126,7 @@ public class Server {
                         result = answer.toJSONString();
                     } else {
                         answer.put("requestID", "0");
-                        answer.put("answer", "error pipez");
+                        answer.put("answer", "auth error!");
                         result = answer.toJSONString();
                     }
                 }
@@ -177,6 +180,165 @@ public class Server {
                     }
                 }
             } catch (org.json.simple.parser.ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    //редактирование профиля
+    public static class EditUserHandler extends MyHttpHandler {
+        UserDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new UserDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("EditUser")) {
+                    int id = (int) req.get("id");
+                    String username = (String) req.get("username");
+                    String telephone = (String) req.get("telephone");
+                    String password = (String) req.get("password");
+                    System.out.println("user with id: " + id + " " + username + " " + telephone + " " + password);
+
+                    if (_dataBase.EditUser(id, username, telephone, password)) {
+                        answer.put("answer", "your profile was edited");
+                        result = answer.toJSONString();
+                    } else {
+                        answer.put("answer", "error!");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    //создание новой заявки
+    public static class NewOrderHandler extends MyHttpHandler {
+        OrderDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new OrderDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("NewOrder")) {
+                    int master_id = (int) req.get("master_id");
+                    int user_id = (int) req.get("user_id");
+                    String mark = (String) req.get("mark");
+                    String color = (String) req.get("color");
+                    String status = (String) req.get("status");
+                    String comment = (String) req.get("comment");
+                    System.out.println("order: " + master_id + " " + user_id + " " + mark + " " + color + ""+ status +""+ comment);
+
+                    if (_dataBase.NewOrder(master_id, user_id, mark, color, status, comment)) {
+                        answer.put("answer", "new order was added");
+                        result = answer.toJSONString();
+                    } else {
+                        answer.put("answer", "new order error!");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    //редактирование заявки
+    public static class EditOrderHandler extends MyHttpHandler {
+        OrderDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new OrderDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("EditOrder")) {
+                    int order_id = (int) req.get("order_id");
+                    int master_id = (int) req.get("master_id");
+                    int user_id = (int) req.get("user_id");
+                    String mark = (String) req.get("mark");
+                    String color = (String) req.get("color");
+                    String status = (String) req.get("status");
+                    String comment = (String) req.get("comment");
+                    System.out.println("order with order_id: " + order_id + master_id + " " + user_id + " "
+                            + mark + " " + color + ""+ status +""+ comment);
+
+                    if (_dataBase.EditOrder(order_id, master_id, user_id, mark, color, status, comment)) {
+                        answer.put("answer", "your profile was edited");
+                        result = answer.toJSONString();
+                    } else {
+                        answer.put("answer", "editorder error!");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
             return result;
