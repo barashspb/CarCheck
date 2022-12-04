@@ -72,7 +72,7 @@ public class UserDB {
                              String telephone,
                              String password) {
         try {
-            String query = "UPDATE user SET username = '"+username+"', telephone = '"+telephone+"', " +
+            String query = "UPDATE users SET username = '"+username+"', telephone = '"+telephone+"', " +
                     "password = '"+password+"' WHERE id = '"+userid+"'";
             PreparedStatement prSt = dbConnection.prepareStatement(query);
             boolean res = prSt.execute(query);
