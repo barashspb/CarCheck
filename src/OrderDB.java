@@ -33,7 +33,7 @@ public class OrderDB {
                              String mark, String color,
                              String status, String comment) {
         try {
-            String query = "INSERT INTO order (master_id, user_id, mark, color, status, comment) " +
+            String query = "INSERT INTO orders (master_id, user_id, mark, color, stat, coment) " +
                     "VALUES ('" + master_id + "','"+ user_id +"','"+ mark +"', '"+color+"', '" + status + "', '"+comment+"')";
             PreparedStatement prSt = dbConnection.prepareStatement(query);
             boolean res = prSt.execute(query);
@@ -57,8 +57,8 @@ public class OrderDB {
                               String mark, String color,
                               String status, String comment) {
         try {
-            String query = "UPDATE order SET master_id = '"+master_id+"', user_id= '"+user_id+"'," +
-                    "mark= '"+mark+"', color= '"+color+"', status= '"+status+"', comment= '"+comment+"' WHERE order_id= '"+order_id+"'";
+            String query = "UPDATE orders SET master_id = '"+master_id+"', user_id= '"+user_id+"'," +
+                    "mark= '"+mark+"', color= '"+color+"', stat= '"+status+"', coment= '"+comment+"' WHERE order_id= '"+order_id+"'";
             PreparedStatement prSt = dbConnection.prepareStatement(query);
             boolean res = prSt.execute(query);
             System.out.println(res);
