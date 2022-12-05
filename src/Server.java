@@ -32,6 +32,11 @@ public class Server {
         _server.createContext("/edit", new EditUserHandler()); //редактирование профиля
         _server.createContext("/neworder", new NewOrderHandler()); //создание новой заявки
         _server.createContext("/editorder", new NewOrderHandler()); //редактирование заявки
+        _server.createContext("/showclientorder", new ShowClientOrderHandler()); //показать заявку клиента
+        _server.createContext("/showorder", new ShowOrderHandler()); //показать заявки по ее id
+        _server.createContext("/showall", new ShowAllMasterOrders()); //показать список заявок по id мастера
+
+        _server.setExecutor(null);
     }
 
     public void start() {
@@ -88,7 +93,7 @@ public class Server {
 
     //авторизация пользователя
     public static class LoginHandler extends MyHttpHandler {
-        private UserDB _dataBase;
+        UserDB _dataBase;
         @Override
         public int HandleHtml(String request, StringBuilder answer, String request_url) {
             try {
@@ -335,6 +340,154 @@ public class Server {
                         result = answer.toJSONString();
                     } else {
                         answer.put("answer", "editorder error!");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    //показать заявку клиента
+    public static class ShowClientOrderHandler extends MyHttpHandler {
+        OrderDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new OrderDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("ShowClientOrder")) {
+                    String id = (String) req.get("userid");
+                    int user_id = Integer.parseInt(id);
+
+                    String resultDataBase =_dataBase.ShowClientOrder(user_id);
+
+                    if (resultDataBase!="-1") {
+                        answer.put("answer", "there is client order");
+                        result = resultDataBase;
+                    } else {
+                        answer.put("answer", "ShowClientOrder error!");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    //получение заявки по ее id
+    public static class ShowOrderHandler extends MyHttpHandler {
+        OrderDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new OrderDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("ShowOrder")) {
+                    String id = (String) req.get("orderid");
+                    int order_id = Integer.parseInt(id);
+
+                    String resultDataBase =_dataBase.ShowOrder(order_id);
+
+                    if (resultDataBase!="-1") {
+                        answer.put("answer", "there is the order");
+                        result = resultDataBase;
+                    } else {
+                        answer.put("answer", "ShowOrder error!");
+                        result = answer.toJSONString();
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+    }
+
+    //получение списка заявок по id мастера
+    public static class ShowAllMasterOrders extends MyHttpHandler {
+        OrderDB _dataBase;
+        @Override
+        public int HandleHtml(String request, StringBuilder answer, String request_url) {
+            try {
+                _dataBase = new OrderDB();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(request);
+            String obrabotka = ParceRequest(request);
+            System.out.println(obrabotka);
+            answer.append(obrabotka);
+            return 200;
+        }
+
+        private String ParceRequest (String request) {
+            JSONObject answer = new JSONObject();
+            answer.put("answer", "server error!");
+            String result = answer.toJSONString();
+            try {
+                Object obj = new JSONParser().parse(request);
+                JSONObject req = (JSONObject) obj;
+                String mod = (String) req.get("mod");
+
+                if (mod.contains("ShowAllMasterOrders")) {
+                    String id = (String) req.get("masterid");
+                    int master_id = Integer.parseInt(id);
+
+                    String resultDataBase =_dataBase.ShowAllOrders(master_id);
+                    if (resultDataBase!="-1") {
+                        answer.put("answer", "all_orders");
+                        result = resultDataBase;
+                    } else {
+                        answer.put("answer", "null orders");
                         result = answer.toJSONString();
                     }
                 }
